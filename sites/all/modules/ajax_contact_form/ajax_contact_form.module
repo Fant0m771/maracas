@@ -1,0 +1,50 @@
+<?php 
+
+/**
+ * Implement hook_menu() 
+ */
+function ajax_contact_form_menu() {
+  $items = array();
+  
+  $items['ajax_contact_form'] = array(
+    'page callback' => 'ajax_contact_form_callback',
+    'access callback' => TRUE,
+    'type' => MENU_CALLBACK,
+    'delivery callback' => 'ajax_deliver',
+    'theme callback' => 'ajax_base_page_theme',    
+  );
+  
+  return $items;
+}
+
+/**
+ * Implement hook_form_alter() 
+ */
+ function ajax_contact_form_form_alter(&$form, &$form_state, $form_id) {
+   switch ($form_id) {
+     case 'contact_site_form' :
+       $form['messages'] = array(
+         '#markup' => "<div id='ajax-forms-messages'></div>",
+         '#weight' => -50,
+       );
+       $form['actions']['submit']['#ajax'] = array(
+         'path' => "ajax_contact_form",
+       );
+     break;
+   }
+ }
+ 
+ /**
+ * Provides ajax callback for form submit
+ */
+ function ajax_contact_form_callback() {
+   list($form, $form_state) = ajax_get_form();
+   
+   drupal_process_form($form['#form_id'], $form, $form_state);
+   
+   return array('#type' => 'ajax', '#commands' => array(
+     ajax_command_replace(".captcha", render($form['captcha'])),
+     ajax_command_html('#ajax-forms-messages', theme('status_messages')),
+     
+   ));
+ }

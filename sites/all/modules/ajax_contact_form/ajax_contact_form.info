@@ -1,0 +1,5 @@
+name = "Ajax contact form"
+description = "Send contact form useing ajax."
+core = 7.x
+package = Custom
+core = "7.x"

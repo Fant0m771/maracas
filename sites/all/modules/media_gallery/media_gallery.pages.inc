@@ -1,6 +1,11 @@
 <?php
 
 /**
+ * @file
+ * Common pages for the Media Gallery module.
+ */
+
+/**
  * Page callback to list all galleries.
  *
  * TODO: When I grow up I want to be a View.
@@ -11,7 +16,7 @@ function media_gallery_list_galleries($term) {
     module_load_include('inc', 'taxonomy', 'taxonomy.pages');
     return taxonomy_term_page($term);
   }
-  
+
   // Add front-end resources for drag-and-drop sorting.
   if (user_access('administer media galleries')) {
     drupal_add_library('system', 'ui.sortable');
@@ -21,6 +26,9 @@ function media_gallery_list_galleries($term) {
     $sort_collection_url = url('media-gallery/sort/collection/' . $term->tid . '/' . drupal_get_token('media_gallery'));
     drupal_add_js(array('mediaGallerySortCollectionUrl' => $sort_collection_url), array('type' => 'setting'));
   }
+  // Assign the term name as the page title.
+  drupal_set_title($term->name);
+
   // Build breadcrumb based on the hierarchy of the term.
   $current = (object) array(
     'tid' => $term->tid,
@@ -57,7 +65,7 @@ function media_gallery_list_galleries($term) {
     $build['pager'] = array(
       '#theme' => 'pager',
       '#weight' => 10,
-     );
+    );
     $build['#term'] = $term;
     $build['#theme'] = 'media_gallery_collection';
   }
@@ -136,7 +144,8 @@ function media_gallery_lightbox_page_deliver($page_content) {
   // iframe results in reduced functionality (you don't get the colorbox
   // plugin's autoresizing behavior).
   print drupal_render($content);
-  drupal_exit();
+  // Perform end-of-request tasks.
+  drupal_page_footer();
 }
 
 /**
@@ -225,7 +234,7 @@ function media_gallery_reorder_gallery($gallery, $order) {
     $num_per_page = $gallery->media_gallery_columns[LANGUAGE_NONE][0]['value'] * $gallery->media_gallery_rows[LANGUAGE_NONE][0]['value'];
     $offset = $num_per_page * $page;
   }
-  
+
   foreach ($order as $new_delta => $old_delta) {
     $gallery->media_gallery_media[LANGUAGE_NONE][$new_delta + $offset] = $media_field[$old_delta + $offset];
   }
@@ -282,8 +291,12 @@ function media_gallery_add_images($node) {
     if (empty($existing_fids[$fid])) {
       $file = Array();
       $file['fid'] = $fid;
-      $file['title'] = null;
+      // media field settings
+      $file['title'] = NULL;
       $file['data'] = '';
+      // file field settings
+      $file['display'] = 1;
+      $file['description'] = '';
       $items[] = $file;
     }
   }
@@ -352,12 +365,20 @@ function media_gallery_media_page_edit($gallery, $file) {
     l($gallery->title, $node_url_arguments['path'], $node_url_arguments['options']),
   ));
 
-  // We'll be reusing Media module's 'media_edit' form, so we need to load its
-  // include file. In addition to loading it here, we also set the include file
-  // info within $form_state in case there are AJAX enabled widgets that will
-  // submit to system/ajax, bypassing this menu callback.
-  module_load_include('inc', 'media', 'includes/media.pages');
-  $form_state['build_info']['files']['menu'] = array('type' => 'inc', 'module' => 'media', 'name' => 'media.pages');
+  if (_media_gallery_media_version() == '1.x') {
+    // We'll be reusing Media module's 'media_edit' form, so we need to load its
+    // include file. In addition to loading it here, we also set the include file
+    // info within $form_state in case there are AJAX enabled widgets that will
+    // submit to system/ajax, bypassing this menu callback.
+    module_load_include('inc', 'media', 'includes/media.pages');
+    $form_state['build_info']['files']['menu'] = array('type' => 'inc', 'module' => 'media', 'name' => 'media.pages');
+    $form_id = 'media_edit';
+  }
+  else {
+    module_load_include('inc', 'file_entity', 'file_entity.pages');
+    $form_state['build_info']['files']['menu'] = array('type' => 'inc', 'module' => 'file_entity', 'name' => 'file_entity.pages');
+    $form_id = 'file_entity_edit';
+  }
 
   // Provide context information for form building and processing functions.
   $form_state['media_gallery']['gallery'] = $gallery;
@@ -365,7 +386,7 @@ function media_gallery_media_page_edit($gallery, $file) {
   // Since we have a $form_state, we can't call drupal_get_form(), so pass the
   // expected arguments to drupal_build_form().
   $form_state['build_info']['args'] = array($file);
-  return drupal_build_form('media_edit', $form_state);
+  return drupal_build_form($form_id, $form_state);
 }
 
 /**
@@ -391,7 +412,12 @@ function media_gallery_media_page_multiedit($node) {
   module_load_include('inc', 'media', 'includes/media.pages');
 
   // Build and process the form.
-  $form = media_page_multiedit($files);
+  if (_media_gallery_media_version() == '1.x') {
+    $form = media_page_multiedit($files);
+  }
+  else {
+    $form = media_file_page_edit_multiple($files);
+  }
 
   // Override the page title set by media_page_multiedit() and return the form.
   drupal_set_title(t('<em>Edit media for</em> @title', array('@type' => $node->type, '@title' => $node->title)), PASS_THROUGH);

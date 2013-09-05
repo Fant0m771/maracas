@@ -218,12 +218,12 @@ textarea {
   color: #EC5C10;
   font-weight: bold;
   text-shadow: 0 0 5px #FFFFFF;
-  background: url("../images/maracas_new.png") no-repeat;
+  background: url("../images/logo4_transparent_m.png") no-repeat;
   text-indent: -9999px;
   display: block;
-  width: 320px;
+  width: 220px;
   height: 130px;
-  margin-top: 0px;
+  margin-top: 303px;
   margin-left: 0;  
 }
 /*-------navigation-------*/
@@ -1615,7 +1615,6 @@ fieldset.captcha {
 
 #content {
   overflow: hidden;
-  padding-left: 5px;
 }
 
 #content img, #content iframe,
@@ -1636,13 +1635,12 @@ fieldset.captcha {
 
 #block-views-priority-items-block .views-row-1 {
   background: url("../images/metro-1-1.png") no-repeat;
-  margin-right: 35px;
-  margin-left: 3px;
+  margin-right: 39px;
 }
 
 #block-views-priority-items-block .views-row-2 {
   background: url("../images/metro-2-2.png") no-repeat; 
-  margin-right: 35px;
+  margin-right: 39px;
 }
 
 #block-views-priority-items-block .views-row-3 {
@@ -2063,6 +2061,14 @@ h1.title {
   text-align: center;
 }
 
+#block-formblock-contact-site {
+  position: fixed;
+  left: 0;
+  top: 40%;
+  width: 150px;
+  background: #FFF;
+  width: 220px;
+}
 
 .one-sidebar #sidebar {
   padding-top: 0;

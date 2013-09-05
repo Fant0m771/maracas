@@ -128,6 +128,10 @@ function orange_preprocess_page(&$vars) {
   }
   */
   
+   
+  if ($vars['theme_hook_suggestions'][0] == "page__contact") {
+    drupal_set_title(t("Напишите нам"));
+  }
   $site_fields = array();
   if (!empty($vars['site_name'])) {
     $site_fields[] = check_plain($vars['site_name']);
@@ -262,27 +266,16 @@ function orange_preprocess_contact_site_form(&$vars) {
 }
 
 function orange_form_alter(&$form, &$form_state) {
-  switch($form['#form_id']) {
-    case "contact_site_form":
-      
-      $form['name']['#attributes'] = array(
-        'required' => array(""),
-      );
-      $form['mail']['#attributes'] = array(
-        'required' => array(""),
-        'mail' => array(),
-      );
-      //$form['mail']['#type'] = "mail";
-      $form['subject']['#required'] = FALSE;
-      
-      /*
-      $form['#suffix'] = "<script> var submit = jQuery('.form-submit'); var form = jQuery('form'); form.click(function() {
-        
-      }) submit.disabled = !form.checkValidity; </script>";
-      kpr($form);
-      */
-    break;
-  }   
+  if ($form['#form_id'] == "contact_site_form") {
+    kpr($form);
+    $form['name']['#attributes'] = array(
+      'required' => array(""),
+    );
+    $form['mail']['#attributes'] = array(
+      'required' => array(""),
+    );
+    $form['subject']['#required'] = FALSE;       
+  }    
 }
 
 /*
